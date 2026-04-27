@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Атомен Строеж - Интерактивен Курс</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;700;900&display=swap');
+
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        /* Planetary Orbit Style */
+        .orbit {
+            position: absolute;
+            border: 2.5px solid rgba(129, 140, 248, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            transition: all 0.5s ease;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
+        }
+
+        .electron {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: #facc15;
+            border-radius: 50%;
+            box-shadow: 0 0 20px #facc15;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-weight: 900;
+            font-size: 14px;
+            top: -11px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(-4px, 4px) rotate(-1.5deg); }
+            50% { transform: translate(4px, -4px) rotate(1.5deg); }
+            75% { transform: translate(-4px, -4px) rotate(-1.5deg); }
+        }
+
+        @keyframes explode {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(2.5); opacity: 0.5; filter: brightness(3); }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        .shaking {
+            animation: shake 0.1s linear infinite !important;
+        }
+
+        .exploding {
+            animation: explode 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+        }
+
+        .float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .lattice-atom {
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hidden-view { display: none; }
+
+        /* Nucleus particle styles */
+        .proton {
+            width: 26px;
+            height: 26px;
+            margin: 1px;
+            background: #ef4444;
+            border-radius: 50%;
+            border: 2px solid #fee2e2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 900;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        }
+
+        .neutron {
+            width: 26px;
+            height: 26px;
+            margin: 1px;
+            background: #94a3b8;
+            border-radius: 50%;
+            border: 2px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 900;
+            color: #1e293b;
+        }
+
+        /* Isotope mini schema */
+        .iso-schema {
+            width: 80px;
+            height: 80px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin: 0 auto 1.5rem;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        input[type=range] { -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; background: #334155; border-radius: 4px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #ffffff; cursor: pointer; margin-top: -6px; border: 3px solid #6366f1; }
+    </style>
+</head>
+<body class="p-4 md:p-6">
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Navigation -->
+        <nav class="flex justify-center mb-8">
+            <div class="bg-slate-800 p-1 rounded-full border border-slate-700 flex flex-wrap gap-1 shadow-2xl">
+                <button onclick="showView('intro')" class="nav-btn px-6 py-2 rounded-full text-xs font-bold transition-all bg-indigo-500 text-white" id="btn-intro">1. УВОД</button>
+                <button onclick="showView('lab')" class="nav-btn px-6 py-2 rounded-full text-xs font-bold transition-all text-slate-400 hover:text-white" id="btn-lab">2. ЛАБОРАТОРИЯ</button>
+                <button onclick="showView('tasks')" class="nav-btn px-6 py-2 rounded-full text-xs font-bold transition-all text-slate-400 hover:text-white" id="btn-tasks">3. ЗАДАЧИ</button>
+                <button onclick="showView('isotopes')" class="nav-btn px-6 py-2 rounded-full text-xs font-bold transition-all text-slate-400 hover:text-white" id="btn-isotopes">4. ИЗОТОПИ</button>
+            </div>
+        </nav>
+
+        <!-- VIEW 1: INTRO -->
+        <section id="view-intro" class="view-content animate-fade-in space-y-12">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+                <div class="space-y-6">
+                    <span class="bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-lg text-xs font-black uppercase tracking-widest">Какво е светът?</span>
+                    <h2 class="text-5xl font-black leading-tight">Всичко е като <span class="text-indigo-400">Лего</span> конструктор.</h2>
+                    <p class="text-slate-300 text-lg">Представи си, че атомите са малки блокчета. Ако ги подредиш по един начин, получаваш графита в твоя молив. Ако ги подредиш по друг – блестящ диамант!</p>
+                    
+                    <div class="bg-slate-800/50 p-6 rounded-3xl border border-slate-700 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold flex items-center gap-2">✏️ Подреди атомите</h4>
+                            <span id="lattice-status" class="text-xs font-black text-indigo-400 uppercase">Графит (Молив)</span>
+                        </div>
+                        <p class="text-sm text-slate-400">Натисни бутона, за да видиш как атомите на въглерода се преподреждат, за да създадат най-здравия материал на Земята.</p>
+                        <button onclick="toggleLattice()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-black text-xs transition-all shadow-lg shadow-indigo-500/20">
+                            ПРОМЕНИ ПОДРЕДБАТА
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-900 aspect-square rounded-[40px] border border-slate-800 flex items-center justify-center relative overflow-hidden shadow-2xl">
+                    <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#6366f1 1px, transparent 1px); background-size: 30px 30px;"></div>
+                    
+                    <div id="lattice-container" class="relative w-64 h-64 flex items-center justify-center">
+                        <!-- Central Atom -->
+                        <div class="lattice-atom absolute w-14 h-14 bg-indigo-500 rounded-full border-4 border-white shadow-xl z-10 flex items-center justify-center font-black">C</div>
+                        <!-- Surrounding Atoms -->
+                        <div id="lat-1" class="lattice-atom absolute w-10 h-10 bg-slate-700 rounded-full border-2 border-slate-500 flex items-center justify-center text-xs font-bold" style="transform: translate(-40px, -120px);">C</div>
+                        <div id="lat-2" class="lattice-atom absolute w-10 h-10 bg-slate-700 rounded-full border-2 border-slate-500 flex items-center justify-center text-xs font-bold" style="transform: translate(40px, -120px);">C</div>
+                        <div id="lat-3" class="lattice-atom absolute w-10 h-10 bg-slate-700 rounded-full border-2 border-slate-500 flex items-center justify-center text-xs font-bold" style="transform: translate(-40px, 120px);">C</div>
+                        <div id="lat-4" class="lattice-atom absolute w-10 h-10 bg-slate-700 rounded-full border-2 border-slate-500 flex items-center justify-center text-xs font-bold" style="transform: translate(40px, 120px);">C</div>
+                        
+                        <svg class="absolute inset-0 w-full h-full pointer-events-none" style="z-index: 0;">
+                            <line id="line-1" x1="50%" y1="50%" x2="43%" y2="31%" stroke="white" stroke-width="2" opacity="0.2" />
+                            <line id="line-2" x1="50%" y1="50%" x2="57%" y2="31%" stroke="white" stroke-width="2" opacity="0.2" />
+                            <line id="line-3" x1="50%" y1="50%" x2="43%" y2="69%" stroke="white" stroke-width="2" opacity="0.2" />
+                            <line id="line-4" x1="50%" y1="50%" x2="57%" y2="69%" stroke="white" stroke-width="2" opacity="0.2" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: LAB -->
+        <section id="view-lab" class="view-content hidden-view space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-4 space-y-6">
+                    <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-xl space-y-6">
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-xs font-bold text-red-400 uppercase">Протони (Z)</span>
+                                <span id="p-val" class="font-mono font-bold text-xl">1</span>
+                            </div>
+                            <input type="range" id="p-slider" min="1" max="10" value="1" class="w-full">
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-xs font-bold text-slate-400 uppercase">Неутрони (N)</span>
+                                <span id="n-val" class="font-mono font-bold text-xl">1</span>
+                            </div>
+                            <input type="range" id="n-slider" min="0" max="12" value="1" class="w-full">
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-xs font-bold text-yellow-400 uppercase">Електрони (e-)</span>
+                                <span id="e-val" class="font-mono font-bold text-xl">1</span>
+                            </div>
+                            <input type="range" id="e-slider" min="0" max="10" value="1" class="w-full">
+                        </div>
+                        <button id="reset-btn" class="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-xl transition-all font-bold text-sm">🔄 НУЛИРАНЕ</button>
+                    </div>
+
+                    <div id="stability-card" class="p-6 rounded-3xl border-2 border-emerald-500/30 bg-emerald-500/5 transition-all">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div id="status-icon" class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                            <span id="status-text" class="text-xs font-black uppercase text-emerald-400">Стабилно ядро</span>
+                        </div>
+                        <p id="status-desc" class="text-xs text-slate-400 font-medium">Ядрото е в баланс между ядрените сили.</p>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-8 relative">
+                    <div id="canvas" class="bg-slate-900 rounded-[40px] border border-slate-800 w-full aspect-video relative overflow-hidden flex items-center justify-center shadow-2xl">
+                        <div id="decay-timer" class="absolute top-10 text-center hidden z-50">
+                            <div class="bg-red-600 text-white px-6 py-2 rounded-full font-black text-sm animate-bounce shadow-2xl">РАЗПАД СЛЕД: <span id="seconds">3</span>с</div>
+                        </div>
+                        
+                        <div class="absolute top-8 left-8 bg-slate-800/80 backdrop-blur-md p-5 rounded-2xl border border-white/5 z-50">
+                            <div id="el-symbol" class="text-5xl font-black text-indigo-400">H</div>
+                            <div id="el-name" class="text-sm font-bold">Водород</div>
+                            <div id="charge-tag-panel" class="mt-2 text-[10px] font-black px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded inline-block">НЕУТРАЛЕН</div>
+                        </div>
+
+                        <div id="atom-container" class="relative flex flex-col items-center justify-center float w-full h-full">
+                            <div id="nucleus" class="relative z-20 w-24 h-24 bg-indigo-500/10 rounded-full flex flex-wrap items-center justify-center p-3 backdrop-blur-sm border border-white/10 shadow-inner"></div>
+                            
+                            <div id="main-charge-label" class="absolute z-50 bottom-1/4 transition-all duration-300">
+                                <div class="px-4 py-2 rounded-full bg-slate-800/90 border border-slate-700 shadow-xl backdrop-blur-sm">
+                                    <span id="charge-status-text" class="text-sm font-black tracking-widest uppercase text-emerald-400">Електронеутрален Атом</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: TASKS -->
+        <section id="view-tasks" class="view-content hidden-view max-w-5xl mx-auto space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Formula Panel -->
+                <div class="lg:col-span-4 space-y-4">
+                    <div class="bg-indigo-600/10 border border-indigo-500/30 p-6 rounded-[30px]">
+                        <h4 class="text-indigo-400 font-black text-sm uppercase mb-4 tracking-tighter">Основни формули</h4>
+                        <div class="space-y-4 font-bold text-sm">
+                            <div class="bg-slate-900/50 p-4 rounded-2xl border-2 border-indigo-500/50 relative overflow-hidden group">
+                                <div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <svg width="40" height="40" viewBox="0 0 24 24" fill="white"><path d="M19,3H5C3.89,3 3,3.89 3,5V19C3,20.11 3.89,21 5,21H19C20.11,21 21,20.11 21,19V5C21,3.89 20.11,3 19,3M19,19H5V5H19V19M11,7H13V9H11V7M11,11H13V17H11V11Z"/></svg>
+                                </div>
+                                <p class="text-xs text-indigo-300 mb-1 uppercase tracking-widest">Масово число (A)</p>
+                                <p class="text-2xl font-black text-white">A = Z + N</p>
+                                <p class="text-[10px] text-slate-400 mt-2 leading-tight">където <span class="text-red-400">Z</span> е брой протони,<br>а <span class="text-slate-300">N</span> е брой неутрони.</p>
+                            </div>
+                            <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700">
+                                <p class="text-xs text-slate-400 mb-1">Атомен номер (Z)</p>
+                                <p class="text-lg">Z = брой Протони</p>
+                            </div>
+                            <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700">
+                                <p class="text-xs text-slate-400 mb-1">Електричен заряд</p>
+                                <p class="text-lg">Заряд = p⁺ - e⁻</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quiz Area -->
+                <div class="lg:col-span-8 bg-slate-800 p-8 rounded-[40px] border border-slate-700 text-center space-y-6 shadow-2xl relative overflow-hidden">
+                    <div class="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl"></div>
+                    <h3 class="text-3xl font-black tracking-tight">Провери знанията си</h3>
+                    <div class="bg-slate-900 p-8 rounded-3xl w-full border border-indigo-500/20 relative z-10">
+                        <p id="task-question" class="text-xl text-indigo-100 font-bold mb-6">Колко е масовото число (A) на атом с 6 протони и 6 неутрони?</p>
+                        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                            <input type="number" id="task-input" placeholder="?" class="bg-slate-800 border-2 border-slate-600 rounded-2xl px-4 py-3 text-2xl font-mono w-32 text-center focus:border-indigo-500 outline-none transition-all">
+                            <button onclick="checkAnswer()" class="bg-indigo-600 px-10 py-3 rounded-2xl font-black hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20 active:scale-95">ПРОВЕРИ</button>
+                        </div>
+                        <div id="task-feedback" class="mt-6 p-4 rounded-xl font-bold hidden"></div>
+                    </div>
+                    <button onclick="generateTask()" class="block mx-auto text-sm text-slate-500 hover:text-indigo-400 transition-colors uppercase font-black tracking-widest">Следваща задача →</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 4: ISOTOPES -->
+        <section id="view-isotopes" class="view-content hidden-view space-y-10">
+            <header class="text-center">
+                <h3 class="text-4xl font-black mb-2 tracking-tight">Изотопи на Водорода</h3>
+                <p class="text-slate-400 max-w-xl mx-auto">Изотопите са атоми на един и същ елемент с равен брой протони, но различен брой неутрони в ядрото.</p>
+            </header>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Protium -->
+                <div class="bg-slate-800 p-8 rounded-[40px] border border-slate-700 hover:border-indigo-500/50 transition-all text-center group">
+                    <div class="iso-schema">
+                        <div class="proton">+</div>
+                    </div>
+                    <div class="text-3xl font-black mb-1 text-indigo-400">Протий</div>
+                    <div class="text-[10px] bg-slate-900 px-2 py-1 rounded-full text-slate-400 mb-6 uppercase tracking-widest font-black inline-block border border-slate-700">1p | 0n</div>
+                    <p class="text-sm text-slate-400 leading-relaxed group-hover:text-slate-200 transition-colors">Най-разпространеният изотоп. Има само един протон в ядрото.</p>
+                </div>
+                <!-- Deuterium -->
+                <div class="bg-slate-800 p-8 rounded-[40px] border border-slate-700 hover:border-indigo-500/50 transition-all text-center group">
+                    <div class="iso-schema">
+                        <div class="flex">
+                            <div class="proton">+</div>
+                            <div class="neutron">0</div>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-black mb-1 text-indigo-400">Деутерий</div>
+                    <div class="text-[10px] bg-slate-900 px-2 py-1 rounded-full text-slate-400 mb-6 uppercase tracking-widest font-black inline-block border border-slate-700">1p | 1n</div>
+                    <p class="text-sm text-slate-400 leading-relaxed group-hover:text-slate-200 transition-colors">Наречен "тежък водород". Участва в състава на тежката вода (D₂O).</p>
+                </div>
+                <!-- Tritium -->
+                <div class="bg-slate-800 p-8 rounded-[40px] border border-slate-700 hover:border-indigo-500/50 transition-all text-center group">
+                    <div class="iso-schema">
+                        <div class="flex flex-wrap justify-center w-12">
+                            <div class="proton">+</div>
+                            <div class="neutron">0</div>
+                            <div class="neutron">0</div>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-black mb-1 text-indigo-400">Тритий</div>
+                    <div class="text-[10px] bg-slate-900 px-2 py-1 rounded-full text-slate-400 mb-6 uppercase tracking-widest font-black inline-block border border-slate-700">1p | 2n</div>
+                    <p class="text-sm text-slate-400 leading-relaxed group-hover:text-slate-200 transition-colors">Радиоактивен изотоп. Използва се за производство на енергия и в медицината.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Intro Lattice Logic
+        let isDiamond = false;
+        function toggleLattice() {
+            isDiamond = !isDiamond;
+            const status = document.getElementById('lattice-status');
+            const atoms = [
+                {id: 'lat-1', x: -80, y: -80, dx: -40, dy: -120},
+                {id: 'lat-2', x: 80, y: -80, dx: 40, dy: -120},
+                {id: 'lat-3', x: -80, y: 80, dx: -40, dy: 120},
+                {id: 'lat-4', x: 80, y: 80, dx: 40, dy: 120}
+            ];
+
+            status.innerText = isDiamond ? "💎 Диамант (Кристал)" : "✏️ Графит (Молив)";
+            
+            atoms.forEach((atom, index) => {
+                const el = document.getElementById(atom.id);
+                const line = document.getElementById(`line-${index+1}`);
+                const x = isDiamond ? atom.x : atom.dx;
+                const y = isDiamond ? atom.y : atom.dy;
+                
+                el.style.transform = `translate(${x}px, ${y}px)`;
+                
+                setTimeout(() => {
+                    const rect = el.getBoundingClientRect();
+                    const containerRect = document.getElementById('lattice-container').getBoundingClientRect();
+                    const targetX = ((rect.left + rect.width/2) - containerRect.left) / containerRect.width * 100;
+                    const targetY = ((rect.top + rect.height/2) - containerRect.top) / containerRect.height * 100;
+                    line.setAttribute('x2', targetX + '%');
+                    line.setAttribute('y2', targetY + '%');
+                    line.style.opacity = isDiamond ? "0.6" : "0.2";
+                }, 50);
+            });
+        }
+
+        // State & Constants for Lab
+        const elements = [
+            { z: 1, s: 'H', n: 'Водород' }, { z: 2, s: 'He', n: 'Хелий' },
+            { z: 3, s: 'Li', n: 'Литий' }, { z: 4, s: 'Be', n: 'Берилий' },
+            { z: 5, s: 'B', n: 'Бор' }, { z: 6, s: 'C', n: 'Въглерод' },
+            { z: 7, s: 'N', n: 'Азот' }, { z: 8, s: 'O', n: 'Кислород' },
+            { z: 9, s: 'F', n: 'Флуор' }, { z: 10, s: 'Ne', n: 'Неон' }
+        ];
+
+        let state = { p: 1, n: 1, e: 1, decaying: false, timer: null };
+        let currentTask = null;
+
+        const pSlider = document.getElementById('p-slider');
+        const nSlider = document.getElementById('n-slider');
+        const eSlider = document.getElementById('e-slider');
+        const nucleus = document.getElementById('nucleus');
+        const atomContainer = document.getElementById('atom-container');
+        const decayTimer = document.getElementById('decay-timer');
+
+        function showView(viewId) {
+            document.querySelectorAll('.view-content').forEach(v => v.classList.add('hidden-view'));
+            document.getElementById('view-' + viewId).classList.remove('hidden-view');
+            
+            document.querySelectorAll('.nav-btn').forEach(b => {
+                b.classList.remove('bg-indigo-500', 'text-white');
+                b.classList.add('text-slate-400');
+            });
+            document.getElementById('btn-' + viewId).classList.add('bg-indigo-500', 'text-white');
+            document.getElementById('btn-' + viewId).classList.remove('text-slate-400');
+
+            if (viewId === 'tasks') generateTask();
+        }
+
+        function updateLab() {
+            state.p = parseInt(pSlider.value);
+            state.n = parseInt(nSlider.value);
+            state.e = parseInt(eSlider.value);
+
+            document.getElementById('p-val').innerText = state.p;
+            document.getElementById('n-val').innerText = state.n;
+            document.getElementById('e-val').innerText = state.e;
+
+            renderNucleus();
+            renderElectrons();
+            updateInfo();
+            checkStability();
+        }
+
+        function renderNucleus() {
+            nucleus.innerHTML = '';
+            for(let i=0; i<state.p; i++) {
+                const p = document.createElement('div');
+                p.className = 'proton';
+                p.innerText = '+';
+                nucleus.appendChild(p);
+            }
+            for(let i=0; i<state.n; i++) {
+                const n = document.createElement('div');
+                n.className = 'neutron';
+                n.innerText = '0';
+                nucleus.appendChild(n);
+            }
+        }
+
+        function renderElectrons() {
+            document.querySelectorAll('.orbit').forEach(o => o.remove());
+            const shells = [2, 8];
+            let remaining = state.e;
+
+            shells.forEach((limit, level) => {
+                if (remaining <= 0) return;
+                const count = Math.min(remaining, limit);
+                remaining -= count;
+
+                const orbit = document.createElement('div');
+                orbit.className = 'orbit';
+                
+                const baseWidth = 200 + (level * 140);
+                const baseHeight = 100 + (level * 80);
+                const tilt = level === 0 ? 15 : -25;
+                
+                orbit.style.width = baseWidth + 'px';
+                orbit.style.height = baseHeight + 'px';
+                orbit.style.transform = `rotate(${tilt}deg)`;
+                orbit.style.animation = `rotate ${3 + level * 2}s linear infinite`;
+                
+                for(let i=0; i<count; i++) {
+                    const e = document.createElement('div');
+                    e.className = 'electron';
+                    e.innerText = '-';
+                    const wrapper = document.createElement('div');
+                    wrapper.style.position = 'absolute';
+                    wrapper.style.width = '100%';
+                    wrapper.style.height = '100%';
+                    wrapper.style.transform = `rotate(${(360/count)*i}deg)`;
+                    wrapper.appendChild(e);
+                    orbit.appendChild(wrapper);
+                }
+                atomContainer.appendChild(orbit);
+            });
+        }
+
+        function updateInfo() {
+            const el = elements.find(e => e.z === state.p) || { s: '?', n: 'Неизвестен' };
+            document.getElementById('el-symbol').innerText = el.s;
+            document.getElementById('el-name').innerText = el.n;
+
+            const tagPanel = document.getElementById('charge-tag-panel');
+            const mainLabelText = document.getElementById('charge-status-text');
+            const diff = state.p - state.e;
+            
+            if (diff === 0) {
+                tagPanel.innerText = 'НЕУТРАЛЕН';
+                tagPanel.className = 'mt-2 text-[10px] font-black px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded inline-block';
+                mainLabelText.innerText = 'Електронеутрален Атом';
+                mainLabelText.className = 'text-sm font-black tracking-widest uppercase text-emerald-400';
+            } else {
+                const sign = diff > 0 ? `+${diff}` : `${diff}`;
+                const labelText = diff > 0 ? `Положителен Йон (Катион ${sign})` : `Отрицателен Йон (Анион ${sign})`;
+                tagPanel.innerText = `ЙОН (${sign})`;
+                tagPanel.className = 'mt-2 text-[10px] font-black px-2 py-1 bg-orange-500/20 text-orange-400 rounded inline-block';
+                mainLabelText.innerText = labelText;
+                mainLabelText.className = 'text-sm font-black tracking-widest uppercase text-orange-400';
+            }
+        }
+
+        function checkStability() {
+            const unstable = state.p > 1 && (state.n < state.p - 1 || state.n > state.p + 2);
+            const card = document.getElementById('stability-card');
+            const icon = document.getElementById('status-icon');
+            const txt = document.getElementById('status-text');
+
+            if (unstable) {
+                card.className = 'p-6 rounded-3xl border-2 border-red-500 bg-red-500/10 animate-pulse';
+                icon.className = 'w-2 h-2 rounded-full bg-red-500';
+                txt.innerText = 'Критична нестабилност';
+                txt.className = 'text-xs font-black uppercase text-red-400';
+                nucleus.classList.add('shaking');
+                startDecay();
+            } else {
+                card.className = 'p-6 rounded-3xl border-2 border-emerald-500/30 bg-emerald-500/5';
+                icon.className = 'w-2 h-2 rounded-full bg-emerald-500';
+                txt.innerText = 'Стабилно ядро';
+                txt.className = 'text-xs font-black uppercase text-emerald-400';
+                nucleus.classList.remove('shaking');
+                stopDecay();
+            }
+        }
+
+        function startDecay() {
+            if (state.decaying) return;
+            state.decaying = true;
+            decayTimer.classList.remove('hidden');
+            let t = 3;
+            document.getElementById('seconds').innerText = t;
+            state.timer = setInterval(() => {
+                t--;
+                document.getElementById('seconds').innerText = t;
+                if (t <= 0) {
+                    clearInterval(state.timer);
+                    atomContainer.classList.add('exploding');
+                    setTimeout(() => { resetLab(); atomContainer.classList.remove('exploding'); state.decaying = false; }, 600);
+                }
+            }, 1000);
+        }
+
+        function stopDecay() {
+            state.decaying = false;
+            clearInterval(state.timer);
+            decayTimer.classList.add('hidden');
+        }
+
+        function resetLab() {
+            pSlider.value = 1; nSlider.value = 1; eSlider.value = 1;
+            updateLab();
+        }
+
+        function generateTask() {
+            const p = Math.floor(Math.random() * 8) + 1;
+            const n = Math.floor(Math.random() * 8) + 1;
+            const type = Math.floor(Math.random() * 3); 
+            
+            if (type === 0) {
+                currentTask = { q: `Колко е масовото число (A) на атом с ${p} протони и ${n} неутрони?`, a: p + n };
+            } else if (type === 1) {
+                currentTask = { q: `Колко неутрона има атом с масово число A=${p+n} и ${p} протони?`, a: n };
+            } else {
+                const e = Math.floor(Math.random() * 8) + 1;
+                const charge = p - e;
+                currentTask = { q: `Какъв е електричният заряд на атом с ${p} протони и ${e} електрони?`, a: charge };
+            }
+            
+            document.getElementById('task-question').innerText = currentTask.q;
+            document.getElementById('task-input').value = '';
+            document.getElementById('task-feedback').classList.add('hidden');
+        }
+
+        function checkAnswer() {
+            const val = parseInt(document.getElementById('task-input').value);
+            const feedback = document.getElementById('task-feedback');
+            feedback.classList.remove('hidden');
+            if (val === currentTask.a) {
+                feedback.innerText = "✅ Страхотно! Отговорът е правилен.";
+                feedback.className = "mt-6 p-4 rounded-xl font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30";
+            } else {
+                feedback.innerText = `❌ Опитай пак. Подсказка: Провери формулите вляво!`;
+                feedback.className = "mt-6 p-4 rounded-xl font-bold text-red-400 bg-red-500/10 border border-red-500/30";
+            }
+        }
+
+        pSlider.addEventListener('input', updateLab);
+        nSlider.addEventListener('input', updateLab);
+        eSlider.addEventListener('input', updateLab);
+        document.getElementById('reset-btn').addEventListener('click', resetLab);
+        updateLab();
+    </script>
+</body>
+</html>
